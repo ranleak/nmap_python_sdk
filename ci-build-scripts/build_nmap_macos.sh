@@ -12,6 +12,11 @@ curl -O https://nmap.org/dist/nmap-${NMAP_VERSION}.tar.bz2
 echo "Extracting..."
 tar -xjf nmap-${NMAP_VERSION}.tar.bz2
 
+# Rename libpcap/VERSION to avoid a conflict with the C++20 <version> header.
+# macOS has a case-insensitive filesystem, so Clang's #include <version> picks
+# up this plain-text file instead of the real system header, causing build errors.
+mv nmap-${NMAP_VERSION}/libpcap/VERSION nmap-${NMAP_VERSION}/libpcap/VERSION.txt
+
 echo "Compiling Nmap for macOS..."
 cd nmap-${NMAP_VERSION}
 
