@@ -56,7 +56,6 @@ jobs:
             if [-f "libpcap/VERSION"]; then
               mv libpcap/VERSION libpcap/VERSION.txt
             fi
-          fi
 
           # Run the build script
           chmod +x ci-build-scripts/${{ matrix.script }}
