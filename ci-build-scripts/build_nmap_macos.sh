@@ -12,6 +12,12 @@ curl -O https://nmap.org/dist/nmap-${NMAP_VERSION}.tar.bz2
 echo "Extracting..."
 tar -xjf nmap-${NMAP_VERSION}.tar.bz2
 
+# Ensure we are in the correct directory, then fix the C++20 header conflict
+if [ -f "libpcap/VERSION" ]; then
+    echo "Renaming libpcap/VERSION to avoid C++20 header conflicts on macOS..."
+    mv libpcap/VERSION libpcap/VERSION.txt
+fi
+
 echo "Compiling Nmap for macOS..."
 cd nmap-${NMAP_VERSION}
 

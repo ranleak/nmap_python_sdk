@@ -55,11 +55,6 @@ jobs:
           echo "LDFLAGS=-L$OPENSSL_DIR/lib" >> $GITHUB_ENV
           echo "PKG_CONFIG_PATH=$OPENSSL_DIR/lib/pkgconfig" >> $GITHUB_ENV
 
-          # 4. Fix the libpcap C++20 header conflict
-          if [ -f "libpcap/VERSION" ]; then
-            mv libpcap/VERSION libpcap/VERSION.txt
-          fi
-
         # This step now stays clean and completely generic for Linux, Android, and macOS
       - name: Compile Nmap
         run: |
