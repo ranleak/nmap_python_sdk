@@ -1,0 +1,106 @@
+version: 2.1
+
+jobs:
+  build-linux:
+    docker:
+      - image: cimg/python:3.10
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: pip install --upgrade pip build dropbox
+      - run:
+          name: Compile Nmap for Linux
+          command: |
+            chmod +x ci-build-scripts/build_nmap_linux.sh
+            ./ci-build-scripts/build_nmap_linux.sh
+      - run:
+          name: Build Python Wheel
+          command: python -m build
+      - run:
+          name: Upload to Dropbox
+          command: |
+            for file in dist/*; do
+              if [ -f "$file" ]; then
+                python upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/
+              fi
+            done
+      - store_artifacts:
+          path: dist
+          destination: linux-wheels
+
+  build-macos:
+    macos:
+      xcode: 15.0.0
+    steps:
+      - checkout
+      - run:
+          name: Install Python dependencies
+          command: pip3 install --upgrade pip build dropbox
+      - run:
+          name: Compile Nmap for macOS
+          command: |
+            chmod +x ci-build-scripts/build_nmap_macos.sh
+            ./ci-build-scripts/build_nmap_macos.sh
+      - run:
+          name: Build Python Wheel
+          command: python3 -m build
+      - run:
+          name: Upload to Dropbox
+          command: |
+            for file in dist/*; do
+              if [ -f "$file" ]; then
+                python3 upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/
+              fi
+            done
+      - store_artifacts:
+          path: dist
+          destination: macos-wheels
+
+  build-android:
+    docker:
+      - image: cimg/android:2024.01.1
+    steps:
+      - checkout
+      - run:
+          name: Setup Python Environment and Dependencies
+          command: |
+            sudo apt-get update && sudo apt-get install -y python3-pip python3-venv
+            python3 -m venv venv
+            . venv/bin/activate
+            pip install --upgrade pip build dropbox
+      - run:
+          name: Compile Nmap for Android
+          command: |
+            # Map CircleCI's NDK path to the variable your script expects
+            export ANDROID_NDK_ROOT=$ANDROID_NDK_HOME
+            chmod +x ci-build-scripts/build_nmap_android.sh
+            ./ci-build-scripts/build_nmap_android.sh
+      - run:
+          name: Build Python Wheel
+          command: |
+            . venv/bin/activate
+            python -m build
+      - run:
+          name: Upload to Dropbox
+          command: |
+            . venv/bin/activate
+            for file in dist/*; do
+              if [ -f "$file" ]; then
+                python upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/
+              fi
+            done
+      - store_artifacts:
+          path: dist
+          destination: android-wheels
+
+workflows:
+  version: 2
+  build-all-wheels:
+    jobs:
+      - build-linux:
+          context: dropbox-secrets
+      - build-macos:
+          context: dropbox-secrets
+      - build-android:
+          context: dropbox-secrets
