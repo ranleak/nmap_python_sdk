@@ -20,6 +20,10 @@ jobs:
           - os: macos-latest
             target: macos
             script: build_nmap_macos.sh
+            # Add Homebrew OpenSSL paths specifically for MacOS
+            cppflags: "-I/opt/homebrew/opt/openssl@3/include"
+            ldflags: "-L/opt/homebrew/opt/openssl@3/lib"
+            pkg_config_path: "/opt/homebrew/opt/openssl@3/lib/pkgconfig"
           - os: ubuntu-latest
             target: android
             script: build_nmap_android.sh
@@ -39,6 +43,13 @@ jobs:
       - name: Setup Android NDK (Android target only)
         if: matrix.target == 'android'
         run: echo "ANDROID_NDK_ROOT=$ANDROID_NDK_LATEST_HOME" >> $GITHUB_ENV
+    
+      - name: Fix libpcap header conflict (macOS only)
+        if: matrix.target == 'macos'
+        run: |
+          if [ -f "libpcap/VERSION" ]; then
+            mv libpcap/VERSION libpcap/VERSION.txt
+          fi
 
       - name: Compile Nmap
         run: |

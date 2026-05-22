@@ -11,7 +11,14 @@ jobs:
           command: pip install --upgrade pip build dropbox
       - run:
           name: Compile Nmap for Linux
+          # Add the Homebrew OpenSSL environment variables and Fix libpcap/VERSION vs C++20 <version> header conflict on case-insensitive macOS FS
           command: |
+            if [ -f "libpcap/VERSION" ]; then
+              mv libpcap/VERSION libpcap/VERSION.txt
+            fi
+            export CPPFLAGS="-I/opt/homebrew/opt/openssl@3/include"
+            export LDFLAGS="-L/opt/homebrew/opt/openssl@3/lib"
+            export PKG_CONFIG_PATH="/opt/homebrew/opt/openssl@3/lib/pkgconfig"
             chmod +x ci-build-scripts/build_nmap_linux.sh
             ./ci-build-scripts/build_nmap_linux.sh
       - run:
@@ -22,7 +29,7 @@ jobs:
           command: |
             for file in dist/*; do
               if [ -f "$file" ]; then
-                python upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/
+                python upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/Linux/
               fi
             done
       - store_artifacts:
@@ -50,7 +57,7 @@ jobs:
           command: |
             for file in dist/*; do
               if [ -f "$file" ]; then
-                python3 upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/
+                python3 upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/MacOS/
               fi
             done
       - store_artifacts:
@@ -87,7 +94,7 @@ jobs:
             . venv/bin/activate
             for file in dist/*; do
               if [ -f "$file" ]; then
-                python upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/
+                python upload_nonint.py "$file" -d /Nmap_Python_SDK_Wheels/Android/
               fi
             done
       - store_artifacts:
