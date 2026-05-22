@@ -23,6 +23,10 @@ cd nmap-${NMAP_VERSION}
 
 # Configure Nmap without extra tools
 ./configure --without-zenmap --without-ncat --without-ndiff --without-nping
+
+# find to hunt down file just in case
+find . -type f -path "*/libpcap/VERSION" -exec mv {} {}.txt \;
+
 # macOS uses sysctl to determine the number of CPU cores
 make -j$(sysctl -n hw.ncpu)
 
